@@ -22,18 +22,17 @@ def search(channel_id):
     # Call the search.list method to retrieve results matching the specified
     #  query term.
     search_response = youtube.search().list(
-        part='id,snippet',
+        part='id',
         maxResults=1,
         channelId=channel_id,
         order='date'
     ).execute()
-    video = []
+    ret_url = ''
 
     # Add each result to the appropriate list, and then display the lists of
     #  matching videos, channels, and playlists.
     for search_result in search_response.get("items", []):
         if search_result["id"]["kind"] == "youtube#video":
-            video.append(search_result["snippet"]["title"])
-            video.append("https://www.youtube.com/watch?v=%s" % (search_result["id"]["videoId"]))
-    return video
+            ret_url = "https://www.youtube.com/watch?v=%s" % (search_result["id"]["videoId"])
+    return ret_url
 

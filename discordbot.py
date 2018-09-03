@@ -44,7 +44,7 @@ async def on_ready():
                 await asyncio.sleep(5)
             channel = check_channel_dict[key]['discord_channel']
             latest = await get_latest_message(channel)
-            _, url = youtube.search(check_channel_dict[key]['youtube_id'])
+            url = youtube.search(check_channel_dict[key]['youtube_id'])
 
             if latest != url:
                 await post_message(channel, url)
