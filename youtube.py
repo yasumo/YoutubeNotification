@@ -13,8 +13,8 @@ inifile = configparser.ConfigParser()
 inifile.read('./settings.ini', 'UTF-8')
 token = inifile.get('GoogleDataAPI', 'token')
 DEVELOPER_KEY = token
-YOUTUBE_API_SERVICE_NAME = "youtube"
-YOUTUBE_API_VERSION = "v3"
+YOUTUBE_API_SERVICE_NAME = 'youtube'
+YOUTUBE_API_VERSION = 'v3'
 
 
 def search(channel_id):
@@ -22,17 +22,21 @@ def search(channel_id):
     # Call the search.list method to retrieve results matching the specified
     #  query term.
     search_response = youtube.search().list(
-        part='id',
+        part='id,snippet',
+        fields='items(id,snippet/liveBroadcastContent)',
         maxResults=1,
         channelId=channel_id,
         order='date'
     ).execute()
-    ret_url = ''
+    ret_msg = ''
 
     # Add each result to the appropriate list, and then display the lists of
     #  matching videos, channels, and playlists.
-    for search_result in search_response.get("items", []):
-        if search_result["id"]["kind"] == "youtube#video":
-            ret_url = "https://www.youtube.com/watch?v=%s" % (search_result["id"]["videoId"])
-    return ret_url
+    for search_result in search_response.get('items', []):
+        if search_result['id']['kind'] == 'youtube#video':
+            ret_msg = 'https://www.youtube.com/watch?v=%s' % (search_result['id']['videoId'])
+            live_status = search_result['snippet']['liveBroadcastContent']
+            if live_status == 'upcoming':
+                ret_msg = '(upcoming) : '+ret_msg
+    return ret_msg
 
