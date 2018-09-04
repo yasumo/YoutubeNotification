@@ -2,8 +2,3 @@
 __pycache__/
 *.py[cod]
 *$py.class
-#download https://github.com/Rapptz/discord.py
-#python -m pip install -U discord.py
-discord.py/
-
-settings.ini

@@ -1,11 +1,10 @@
 import discord
 import asyncio
-import configparser
-import time
 import csv
 import youtube
 import logging
 from datetime import datetime
+import os
 
 logging.basicConfig(level=logging.ERROR)
 
@@ -15,15 +14,13 @@ server = None
 DISCORD_INTERVAL = 5
 YOUTUBE_INTERVAL = 15
 
-ini_file = configparser.ConfigParser()
-ini_file.read('./settings.ini', 'UTF-8')
-token = ini_file.get('Discord', 'token')
-server_id = ini_file.get('Discord', 'server')
+token = os.environ['DISCORD_TOKEN']
+server_id = os.environ['DISCORD_SERVER']
 
 
 with open('./channellist.csv','r',encoding='utf-8') as f:
     reader = csv.reader(f, delimiter=',')
-    #skip header
+    # skip header
     header = next(reader)
     for row in reader:
         check_channel_dict[row[0].lower()] = {'youtube_id': row[1]}

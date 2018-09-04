@@ -2,7 +2,6 @@ aiohttp==1.0.5
 async-timeout==3.0.0
 cachetools==2.1.0
 chardet==3.0.4
-configparser==3.5.0
 discord.py==0.16.12
 google-api-python-client==1.7.4
 google-auth==1.5.1
