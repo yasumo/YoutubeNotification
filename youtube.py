@@ -25,6 +25,7 @@ def search(channel_id):
         part='id,snippet',
         fields='items(id,snippet/liveBroadcastContent)',
         maxResults=1,
+        type='video',
         channelId=channel_id,
         order='date'
     ).execute()
