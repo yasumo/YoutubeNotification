@@ -12,7 +12,7 @@ client = discord.Client()
 check_channel_dict = dict()
 server = None
 DISCORD_INTERVAL = 5
-YOUTUBE_INTERVAL = 15
+YOUTUBE_INTERVAL = 10
 
 token = os.environ['DISCORD_TOKEN']
 server_id = os.environ['DISCORD_SERVER']
@@ -44,7 +44,7 @@ async def on_ready():
             check_channel_dict[key]['discord_channel'] = await create_channel(key)
         # discordの該当チャンネルに投稿してある最新メッセージをキャッシュ
         channel = check_channel_dict[key]['discord_channel']
-        check_channel_dict[key]['discord_latest_msg'] = await get_latest_message(channel)
+        check_channel_dict[key]['discord_latest_msgs'] = await get_latest_messages(channel)
         await asyncio.sleep(DISCORD_INTERVAL)
 
     count = 0
@@ -54,21 +54,27 @@ async def on_ready():
         for key in check_channel_dict:
             # discordの最新メッセージ(キャッシュ)とyoutubeの最新動画URLを取得
             channel = check_channel_dict[key]['discord_channel']
-            discord_latest_msg = check_channel_dict[key]['discord_latest_msg']
+            discord_latest_msgs = check_channel_dict[key]['discord_latest_msgs']
             logging.info("search youtube %s %s", key, check_channel_dict[key]['youtube_id'])
             url = youtube.search(check_channel_dict[key]['youtube_id'])
+            await asyncio.sleep(YOUTUBE_INTERVAL)
             # discordの最新メッセージと、youtubeの最新動画URLが等しく無ければdiscordにpost
-            if discord_latest_msg != url:
+            need_post = True
+            for msg in discord_latest_msgs:
+                if msg == url:
+                    need_post = False
+                    break
+            if need_post:
                 logging.info("post_message %s", key)
                 await post_message(channel, url)
                 check_channel_dict[key]['discord_latest_msg'] = url
-            await asyncio.sleep(YOUTUBE_INTERVAL)
 
 
-async def get_latest_message(channel):
-    async for message in client.logs_from(channel, limit=1):
-        return message.content
-    return 'none'
+async def get_latest_messages(channel):
+    ret_msgs = []
+    async for message in client.logs_from(channel, limit=5):
+        ret_msgs.append(message.content)
+    return ret_msgs
 
 
 async def create_channel(channel_name):
