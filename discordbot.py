@@ -67,7 +67,9 @@ async def on_ready():
             if need_post:
                 logging.info("post_message %s", key)
                 await post_message(channel, url)
-                check_channel_dict[key]['discord_latest_msg'] = url
+                if len(check_channel_dict[key]['discord_latest_msgs']) > 4:
+                    check_channel_dict[key]['discord_latest_msgs'].pop(-1)
+                check_channel_dict[key]['discord_latest_msgs'].insert(0,url)
 
 
 async def get_latest_messages(channel):
