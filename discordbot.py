@@ -60,20 +60,21 @@ async def on_ready():
             discord_latest_msgs = check_channel_dict[key]['discord_latest_msgs']
             logging.info("search youtube %s %s", key, check_channel_dict[key]['youtube_id'])
             # url = youtube.search(check_channel_dict[key]['youtube_id'])
-            url = await get_latest_url(check_channel_dict[key]['youtube_id'])
+            url_list = await get_latest_url(check_channel_dict[key]['youtube_id'])
             await asyncio.sleep(YOUTUBE_INTERVAL)
             # discordの最新メッセージと、youtubeの最新動画URLが等しく無ければdiscordにpost
-            need_post = True
-            for msg in discord_latest_msgs:
-                if msg == url:
-                    need_post = False
-                    break
-            if need_post:
-                logging.info("post_message %s", key)
-                await post_message(channel, url)
-                if len(check_channel_dict[key]['discord_latest_msgs']) > 4:
-                    check_channel_dict[key]['discord_latest_msgs'].pop(-1)
-                check_channel_dict[key]['discord_latest_msgs'].insert(0,url)
+            for url in url_list:
+                need_post = True
+                for msg in discord_latest_msgs:
+                    if msg == url:
+                        need_post = False
+                        break
+                if need_post:
+                    logging.info("post_message %s", key)
+                    await post_message(channel, url)
+                    if len(check_channel_dict[key]['discord_latest_msgs']) > 9:
+                        check_channel_dict[key]['discord_latest_msgs'].pop(-1)
+                    check_channel_dict[key]['discord_latest_msgs'].insert(0,url)
 
 
 async def get_latest_url(youtube_channel_id):
@@ -83,7 +84,7 @@ async def get_latest_url(youtube_channel_id):
             return url
         except:
             print(traceback.format_exc())
-            await asyncio.sleep(YOUTUBE_INTERVAL)
+            await asyncio.sleep(ERROR_INTERVAL)
             continue
 
 
@@ -91,7 +92,7 @@ async def get_latest_messages(channel):
     while True:
         ret_msgs = []
         try:
-            async for message in client.logs_from(channel, limit=5):
+            async for message in client.logs_from(channel, limit=10):
                 ret_msgs.append(message.content)
             return ret_msgs
         except:
