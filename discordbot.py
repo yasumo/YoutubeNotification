@@ -5,6 +5,7 @@ import youtube
 import logging
 from datetime import datetime
 import os
+import traceback
 
 logging.basicConfig(level=logging.ERROR)
 
@@ -12,7 +13,8 @@ client = discord.Client()
 check_channel_dict = dict()
 server = None
 DISCORD_INTERVAL = 5
-YOUTUBE_INTERVAL = 10
+YOUTUBE_INTERVAL = 9
+ERROR_INTERVAL = 60
 
 token = os.environ['DISCORD_TOKEN']
 server_id = os.environ['DISCORD_SERVER']
@@ -24,6 +26,7 @@ with open('./channellist.csv','r',encoding='utf-8') as f:
     header = next(reader)
     for row in reader:
         check_channel_dict[row[0].lower()] = {'youtube_id': row[1]}
+
 
 @client.event
 async def on_ready():
@@ -56,7 +59,8 @@ async def on_ready():
             channel = check_channel_dict[key]['discord_channel']
             discord_latest_msgs = check_channel_dict[key]['discord_latest_msgs']
             logging.info("search youtube %s %s", key, check_channel_dict[key]['youtube_id'])
-            url = youtube.search(check_channel_dict[key]['youtube_id'])
+            # url = youtube.search(check_channel_dict[key]['youtube_id'])
+            url = await get_latest_url(check_channel_dict[key]['youtube_id'])
             await asyncio.sleep(YOUTUBE_INTERVAL)
             # discordの最新メッセージと、youtubeの最新動画URLが等しく無ければdiscordにpost
             need_post = True
@@ -72,29 +76,61 @@ async def on_ready():
                 check_channel_dict[key]['discord_latest_msgs'].insert(0,url)
 
 
+async def get_latest_url(youtube_channel_id):
+    while True:
+        try:
+            url = youtube.search(youtube_channel_id)
+            return url
+        except:
+            print(traceback.format_exc())
+            await asyncio.sleep(YOUTUBE_INTERVAL)
+            continue
+
+
 async def get_latest_messages(channel):
-    ret_msgs = []
-    async for message in client.logs_from(channel, limit=5):
-        ret_msgs.append(message.content)
-    return ret_msgs
+    while True:
+        ret_msgs = []
+        try:
+            async for message in client.logs_from(channel, limit=5):
+                ret_msgs.append(message.content)
+            return ret_msgs
+        except:
+            print(traceback.format_exc())
+            await asyncio.sleep(ERROR_INTERVAL)
+            continue
 
 
 async def create_channel(channel_name):
-    print("create channel", channel_name);
-    return await client.create_channel(server, channel_name, type=discord.ChannelType.text)
+    print("create channel", channel_name)
+    while True:
+        try:
+            return await client.create_channel(server, channel_name, type=discord.ChannelType.text)
+        except:
+            print(traceback.format_exc())
+            await asyncio.sleep(ERROR_INTERVAL)
+            continue
 
 
 @client.event
 async def on_message(message):
     if message.content.startswith('/neko'):
         reply = 'にゃーん'
-        await client.send_message(message.channel, reply)
+        try:
+            await client.send_message(message.channel, reply)
+        except:
+            print(traceback.format_exc())
 
 
 async def post_message(channel,msg):
     print('post_message ', msg)
-    await client.send_message(channel, msg)
-
+    while True:
+        try:
+            await client.send_message(channel, msg)
+            return
+        except:
+            print(traceback.format_exc())
+            await asyncio.sleep(ERROR_INTERVAL)
+            continue
 
 client.run(token)
 
