@@ -10,28 +10,20 @@ import traceback
 logging.basicConfig(level=logging.ERROR)
 
 client = discord.Client()
-check_channel_dict = dict()
 server = None
 DISCORD_INTERVAL = 5
 YOUTUBE_INTERVAL = 9
 ERROR_INTERVAL = 60
 
-token = os.environ['DISCORD_TOKEN']
-server_id = os.environ['DISCORD_SERVER']
-
-
-with open('./channellist.csv','r',encoding='utf-8') as f:
-    reader = csv.reader(f, delimiter=',')
-    # skip header
-    header = next(reader)
-    for row in reader:
-        check_channel_dict[row[0].lower()] = {'youtube_id': row[1]}
+TOKEN = os.environ['DISCORD_TOKEN']
+SERVER_ID = os.environ['DISCORD_SERVER']
 
 
 @client.event
 async def on_ready():
-    global server, server_id
-    server = client.get_server(str(server_id))
+    global server
+    check_channel_dict = get_channel_dict()
+    server = client.get_server(str(SERVER_ID))
     print('Logged in as ', client.user.name, client.user.id)
     print('------')
     discord_channels = client.get_all_channels()
@@ -74,6 +66,27 @@ async def on_ready():
             check_channel_dict[key]['discord_latest_msgs'] = check_channel_dict[key]['discord_latest_msgs'][:10]
 
 
+@client.event
+async def on_message(message):
+    if message.content.startswith('/neko'):
+        reply = 'にゃーん'
+        try:
+            await client.send_message(message.channel, reply)
+        except:
+            print(traceback.format_exc())
+
+
+def get_channel_dict():
+    ret_dict = dict()
+    with open('./channellist.csv', 'r', encoding='utf-8') as f:
+        reader = csv.reader(f, delimiter=',')
+        # skip header
+        header = next(reader)
+        for row in reader:
+            ret_dict[row[0].lower()] = {'youtube_id': row[1]}
+        return ret_dict
+
+
 async def get_latest_url(youtube_channel_id):
     while True:
         try:
@@ -109,16 +122,6 @@ async def create_channel(channel_name):
             continue
 
 
-@client.event
-async def on_message(message):
-    if message.content.startswith('/neko'):
-        reply = 'にゃーん'
-        try:
-            await client.send_message(message.channel, reply)
-        except:
-            print(traceback.format_exc())
-
-
 async def post_message(channel,msg):
     print('post_message ', msg)
     while True:
@@ -130,6 +133,6 @@ async def post_message(channel,msg):
             await asyncio.sleep(ERROR_INTERVAL)
             continue
 
-client.run(token)
+client.run(TOKEN)
 
 
