@@ -65,16 +65,13 @@ async def on_ready():
             # discordの最新メッセージと、youtubeの最新動画URLが等しく無ければdiscordにpost
             for url in url_list:
                 need_post = True
-                for msg in discord_latest_msgs:
-                    if msg == url:
-                        need_post = False
-                        break
+                if url in discord_latest_msgs:
+                    need_post = False
                 if need_post:
                     logging.info("post_message %s", key)
                     await post_message(channel, url)
-                    if len(check_channel_dict[key]['discord_latest_msgs']) > 9:
-                        check_channel_dict[key]['discord_latest_msgs'].pop(-1)
-                    check_channel_dict[key]['discord_latest_msgs'].insert(0,url)
+                    check_channel_dict[key]['discord_latest_msgs'].insert(0, url)
+            check_channel_dict[key]['discord_latest_msgs'] = check_channel_dict[key]['discord_latest_msgs'][:10]
 
 
 async def get_latest_url(youtube_channel_id):
