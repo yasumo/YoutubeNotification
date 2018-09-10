@@ -7,8 +7,7 @@ import traceback
 #   https://cloud.google.com/console
 # Please ensure that you have enabled the YouTube Data API for your project.
 
-token = os.environ['GOOGLEDATAAPI_TOKEN']
-DEVELOPER_KEY = token
+DEVELOPER_KEY = os.environ['GOOGLEDATAAPI_TOKEN']
 YOUTUBE_API_SERVICE_NAME = 'youtube'
 YOUTUBE_API_VERSION = 'v3'
 
