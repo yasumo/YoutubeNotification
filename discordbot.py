@@ -63,7 +63,7 @@ async def on_ready():
                     logging.info("post_message %s", key)
                     await post_message(channel, url)
                     check_channel_dict[key]['discord_latest_msgs'].insert(0, url)
-            check_channel_dict[key]['discord_latest_msgs'] = check_channel_dict[key]['discord_latest_msgs'][:10]
+            check_channel_dict[key]['discord_latest_msgs'] = check_channel_dict[key]['discord_latest_msgs'][:20]
 
 
 @client.event
@@ -102,7 +102,7 @@ async def get_latest_messages(channel):
     while True:
         ret_msgs = []
         try:
-            async for message in client.logs_from(channel, limit=10):
+            async for message in client.logs_from(channel, limit=20):
                 ret_msgs.append(message.content)
             return ret_msgs
         except:
