@@ -14,6 +14,7 @@ server = None
 DISCORD_INTERVAL = 5
 YOUTUBE_INTERVAL = 9
 ERROR_INTERVAL = 60
+DISCORD_CACHE_LIMIT = 20
 
 TOKEN = os.environ['DISCORD_TOKEN']
 SERVER_ID = os.environ['DISCORD_SERVER']
@@ -63,7 +64,7 @@ async def on_ready():
                     logging.info("post_message %s", key)
                     await post_message(channel, url)
                     check_channel_dict[key]['discord_latest_msgs'].insert(0, url)
-            check_channel_dict[key]['discord_latest_msgs'] = check_channel_dict[key]['discord_latest_msgs'][:10]
+            check_channel_dict[key]['discord_latest_msgs'] = check_channel_dict[key]['discord_latest_msgs'][:DISCORD_CACHE_LIMIT]
 
 
 @client.event
@@ -102,7 +103,7 @@ async def get_latest_messages(channel):
     while True:
         ret_msgs = []
         try:
-            async for message in client.logs_from(channel, limit=10):
+            async for message in client.logs_from(channel, limit=DISCORD_CACHE_LIMIT):
                 ret_msgs.append(message.content)
             return ret_msgs
         except:
